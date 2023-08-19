@@ -8,16 +8,6 @@ build: manifests generate fmt vet ## Build manager binary.
 run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./main.go
 
-IMG ?= registry.cafebazaar.ir:5000/cloud/openstack/mentorship/caas:v0.1.4
-
-.PHONY: docker-build
-docker-build: ## Build docker image with the manager.
-	docker build -t ${IMG} .
-
-.PHONY: docker-push
-docker-push: ## Push docker image with the manager.
-	docker push ${IMG}
-
 ##@ Development
 
 .PHONY: generate
