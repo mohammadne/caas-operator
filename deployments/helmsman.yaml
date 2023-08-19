@@ -3,7 +3,7 @@ settings:
   timeout: 6000
 
 namespaces:
-  caas-operator-system:
+  operators:
     labels:
       managed-by: helmsman
   caas-playground:
@@ -13,7 +13,7 @@ namespaces:
 apps:
   caas-operator:
     name: caas-operator
-    namespace: caas-operator-system
+    namespace: operators
     chart: "./caas-operator"
     enabled: true
     version: "0.1.0"
