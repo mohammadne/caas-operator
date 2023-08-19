@@ -1,0 +1,57 @@
+operator-helm:
+  fullnameOverride: caas-operator
+
+  manager:
+    roles:
+      - apiGroups: [""]
+        resources: ["services"]
+        verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+      - apiGroups: ["apps"]
+        resources: ["deployments"]
+        verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+      - apiGroups: ["networking.k8s.io"]
+        resources: ["ingresses"]
+        verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+      - apiGroups: ["apps.mohammadne.me"]
+        resources: ["executers"]
+        verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+      - apiGroups: ["apps.mohammadne.me"]
+        resources: ["executers/finalizers"]
+        verbs: ["update"]
+      - apiGroups: ["apps.mohammadne.me"]
+        resources: ["executers/status"]
+        verbs: ["get", "update", "patch"]
+    image:
+      registry: registry.cafebazaar.ir:5000
+      repository: cloud/openstack/mentorship/caas
+      pullPolicy: Always
+      tag: "v0.1.4"
+      pullSecrets:
+        enabled: true
+    args:
+      - server
+
+  webhook:
+    mutating:
+      enabled: true
+      rules:
+        - operations: ["CREATE", "UPDATE"]
+          apiGroups: ["apps.ravh.ir"]
+          apiVersions: ["v1alpha1"]
+          resources: ["executers"]
+    validating:
+      enabled: true
+      rules:
+        - operations: ["CREATE", "UPDATE", "DELETE"]
+          apiGroups: ["apps.ravh.ir"]
+          apiVersions: ["v1alpha1"]
+          resources: ["executers"]
+
+  config:
+    enabled: true
+    mountPath: /tmp/caas-operator
+    values:
+      domain: "mohammadne.me"
+      loadbalancer_ip: "86.104.38.209"
+      cloudflare:
+        cloudflare_url: "https://api.cloudflare.com/client/v4"

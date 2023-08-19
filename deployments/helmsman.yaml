@@ -1,0 +1,28 @@
+settings:
+  maxHistory: 10
+  timeout: 6000
+
+namespaces:
+  caas-operator-system:
+    labels:
+      managed-by: helmsman
+  caas-playground:
+    labels:
+      managed-by: helmsman
+
+apps:
+  caas-operator:
+    name: caas-operator
+    namespace: caas-operator-system
+    chart: "./caas-operator"
+    enabled: true
+    version: "0.1.0"
+    secretsFiles: 
+      - ./caas-operator/secrets.yaml
+
+  caas-playground:
+    name: caas-playground
+    namespace: caas-playground
+    chart: "./caas-playground"
+    enabled: false
+    version: "0.1.0"
