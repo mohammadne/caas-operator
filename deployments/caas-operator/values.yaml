@@ -25,7 +25,7 @@ operator-helm:
       registry: ghcr.io
       repository: mohammadne/caas-operator
       pullPolicy: Always
-      tag: "v0.1.1"
+      tag: "v0.1.2"
     args:
       - server
 
