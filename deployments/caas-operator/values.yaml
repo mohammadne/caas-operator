@@ -22,12 +22,10 @@ operator-helm:
         resources: ["executers/status"]
         verbs: ["get", "update", "patch"]
     image:
-      registry: registry.cafebazaar.ir:5000
-      repository: cloud/openstack/mentorship/caas
+      registry: ghcr.io
+      repository: mohammadne/caas-operator
       pullPolicy: Always
-      tag: "v0.1.4"
-      pullSecrets:
-        enabled: true
+      tag: "v0.1.0"
     args:
       - server
 

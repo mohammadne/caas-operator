@@ -1,8 +1,25 @@
-FROM alpine:3.18.2
+# ------------------------------------------- Builder
+FROM golang:alpine AS builder
 
-COPY ./bin/manager /bin
+RUN apk add git
 
-RUN apk add libc6-compat && \
-    apk add gcompat
+WORKDIR /app
 
-ENTRYPOINT ["/bin/manager"]
+COPY go.mod go.sum ./
+
+RUN go mod download
+
+COPY . .
+
+RUN go build -o /entrypoint
+
+# ------------------------------------------- Runtime
+FROM alpine:latest AS runtime
+
+LABEL maintainer="Mohammad Nasr <mohammadne.dev@gmail.com>"
+
+WORKDIR /app
+
+COPY --from=builder /entrypoint .
+
+ENTRYPOINT ["./entrypoint"]
