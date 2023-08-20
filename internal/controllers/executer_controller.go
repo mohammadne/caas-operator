@@ -92,7 +92,7 @@ func (r *ExecuterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	// don't continue if we don't need service
-	if !executer.CreateService() {
+	if !executer.ShouldCreateService() {
 		return ctrl.Result{}, nil
 	}
 
@@ -102,7 +102,7 @@ func (r *ExecuterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	// don't continue if we don't need ingress
-	if !executer.CreateIngress() {
+	if !executer.ShouldCreateIngress() {
 		return ctrl.Result{}, nil
 	}
 
@@ -248,7 +248,7 @@ func deploymentTemplate(executer *appsv1alpha1.Executer) *appsv1.Deployment {
 		},
 	}
 
-	if executer.CreateService() {
+	if executer.ShouldCreateService() {
 		deployment.Spec.Template.Spec.Containers[0].Ports = []corev1.ContainerPort{
 			{
 				ContainerPort: executer.Spec.Port,

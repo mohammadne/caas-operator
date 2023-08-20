@@ -81,11 +81,11 @@ type Executer struct {
 	Status ExecuterStatus `json:"status,omitempty"`
 }
 
-func (e *Executer) CreateService() bool {
+func (e *Executer) ShouldCreateService() bool {
 	return e.Spec.Port != 0
 }
 
-func (e *Executer) CreateIngress() bool {
+func (e *Executer) ShouldCreateIngress() bool {
 	return e.Spec.Ingress != nil
 }
 

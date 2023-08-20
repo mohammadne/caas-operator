@@ -40,7 +40,7 @@ var _ webhook.Defaulter = &Executer{}
 func (r *Executer) Default() {
 	executerlog.Info("default", "name", r.Name)
 
-	if r.CreateIngress() && r.Spec.Ingress.Name == "" {
+	if r.ShouldCreateIngress() && r.Spec.Ingress.Name == "" {
 		r.Spec.Ingress.Name = r.Name
 	}
 
