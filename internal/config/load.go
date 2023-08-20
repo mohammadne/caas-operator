@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/rawbytes"
 	"github.com/knadh/koanf/providers/structs"
 	"github.com/knadh/koanf/v2"
@@ -29,6 +31,11 @@ func Load(print bool) *Config {
 		log.Fatalf("error loading default: %s", err)
 	}
 
+	// load config from environment variables
+	if err := LoadEnv(k); err != nil {
+		log.Printf("error loading environment variables: %v", err)
+	}
+
 	// load config from configmap
 	if err := loadConfigmap(k); err != nil {
 		log.Fatalf("Error loading from configmap: \n%v", err)
@@ -46,6 +53,27 @@ func Load(print bool) *Config {
 	}
 
 	return &config
+}
+
+const (
+	envPrefix    = "CAAS_OPERATOR"
+	envSeperator = "__"
+)
+
+func LoadEnv(k *koanf.Koanf) error {
+	var prefix = envPrefix + envSeperator
+
+	callback := func(source string) string {
+		base := strings.ToLower(strings.TrimPrefix(source, prefix))
+		return strings.ReplaceAll(base, envSeperator, delimiter)
+	}
+
+	// load environment variables
+	if err := k.Load(env.Provider(prefix, delimiter, callback), nil); err != nil {
+		return fmt.Errorf("error loading environment variables: %s", err)
+	}
+
+	return nil
 }
 
 func loadConfigmap(k *koanf.Koanf) error {
