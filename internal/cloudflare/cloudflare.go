@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+
+	"go.uber.org/zap"
 )
 
 type Cloudflare interface {
@@ -22,6 +24,7 @@ type Cloudflare interface {
 type cloudflare struct {
 	config *Config
 	domain string
+	logger *zap.Logger
 }
 
 // DNSRecord is a partial request and response model for working with Cloudflare API
@@ -34,8 +37,8 @@ type DNSRecord struct {
 	TTL     int    `json:"ttl"`
 }
 
-func New(cfg *Config, domain string) Cloudflare {
-	return &cloudflare{config: cfg, domain: domain}
+func New(cfg *Config, domain string, lg *zap.Logger) Cloudflare {
+	return &cloudflare{config: cfg, domain: domain, logger: lg}
 }
 
 func (c *cloudflare) listRecords() ([]DNSRecord, error) {
@@ -47,7 +50,7 @@ func (c *cloudflare) listRecords() ([]DNSRecord, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error listing DNS records:", err)
+		c.logger.Error("Error listing DNS records", zap.Error(err))
 		return []DNSRecord{}, err
 	}
 	defer resp.Body.Close()
@@ -58,7 +61,7 @@ func (c *cloudflare) listRecords() ([]DNSRecord, error) {
 
 	// var records []DNSRecord
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		fmt.Println("Error decoding JSON:", err)
+		c.logger.Error("Error decoding JSON", zap.Error(err))
 		return []DNSRecord{}, err
 	}
 
@@ -68,6 +71,7 @@ func (c *cloudflare) listRecords() ([]DNSRecord, error) {
 func (c *cloudflare) getRecordID(subdomain string) (string, error) {
 	records, err := c.listRecords()
 	if err != nil {
+		c.logger.Error("Error list records", zap.Error(err))
 		return "", err
 	}
 
@@ -89,6 +93,7 @@ var (
 func (c *cloudflare) CreateRecord(subdomain, ip string) error {
 	recordID, err := c.getRecordID(subdomain)
 	if err != nil {
+		c.logger.Error("Error get record id", zap.Error(err))
 		return err
 	} else if recordID != "" {
 		return RecordAlreadyExists
@@ -108,7 +113,7 @@ func (c *cloudflare) CreateRecord(subdomain, ip string) error {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error creating DNS record:", err)
+		c.logger.Error("Error creating DNS record", zap.Error(err))
 		return err
 	}
 	defer resp.Body.Close()
@@ -119,6 +124,7 @@ func (c *cloudflare) CreateRecord(subdomain, ip string) error {
 func (c *cloudflare) UpdateRecord(subdomain, ip string) error {
 	recordID, err := c.getRecordID(subdomain)
 	if err != nil {
+		c.logger.Error("Error get record id", zap.Error(err))
 		return err
 	} else if recordID == "" {
 		return RecordNotFound
@@ -136,7 +142,7 @@ func (c *cloudflare) UpdateRecord(subdomain, ip string) error {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error updating DNS record:", err)
+		c.logger.Error("Error updating DNS record", zap.Error(err))
 		return err
 	}
 	defer resp.Body.Close()
@@ -147,6 +153,7 @@ func (c *cloudflare) UpdateRecord(subdomain, ip string) error {
 func (c *cloudflare) DeleteRecord(subdomain string) error {
 	recordID, err := c.getRecordID(subdomain)
 	if err != nil {
+		c.logger.Error("Error get record id", zap.Error(err))
 		return err
 	} else if recordID == "" {
 		return RecordNotFound
@@ -159,7 +166,7 @@ func (c *cloudflare) DeleteRecord(subdomain string) error {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error deleting DNS record:", err)
+		c.logger.Error("Error deleting DNS record", zap.Error(err))
 		return err
 	}
 	defer resp.Body.Close()

@@ -77,7 +77,7 @@ func (cmd *Server) main(cfg *config.Config) {
 		Client:     manager.GetClient(),
 		Scheme:     manager.GetScheme(),
 		Config:     cfg,
-		Cloudflare: cloudflare.New(cfg.Cloudflare, cfg.Domain),
+		Cloudflare: cloudflare.New(cfg.Cloudflare, cfg.Domain, logger),
 		Logger:     logger,
 	}).SetupWithManager(manager); err != nil {
 		logger.Fatal("Unable to create Executer controller", zap.Error(err))
