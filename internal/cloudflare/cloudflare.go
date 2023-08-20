@@ -90,6 +90,22 @@ var (
 	RecordNotFound      = errors.New("Record not found")
 )
 
+func (c *cloudflare) sendRequest(url string, payload []byte, method string) error {
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	req.Header.Set("Authorization", "Bearer "+c.config.Token)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		c.logger.Error("Error performing request", zap.Error(err))
+		return err
+	}
+	defer resp.Body.Close()
+
+	return nil
+}
+
 func (c *cloudflare) CreateRecord(subdomain, ip string) error {
 	recordID, err := c.getRecordID(subdomain)
 	if err != nil {
@@ -106,19 +122,8 @@ func (c *cloudflare) CreateRecord(subdomain, ip string) error {
 	})
 
 	url := fmt.Sprintf("%s/zones/%s/dns_records", c.config.CloudflareURL, c.config.ZoneID)
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(payload))
-	req.Header.Set("Authorization", "Bearer "+c.config.Token)
-	req.Header.Set("Content-Type", "application/json")
+	return c.sendRequest(url, payload, "POST")
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		c.logger.Error("Error creating DNS record", zap.Error(err))
-		return err
-	}
-	defer resp.Body.Close()
-
-	return nil
 }
 
 func (c *cloudflare) UpdateRecord(subdomain, ip string) error {
@@ -135,19 +140,7 @@ func (c *cloudflare) UpdateRecord(subdomain, ip string) error {
 	})
 
 	url := fmt.Sprintf("%s/zones/%s/dns_records/%s", c.config.CloudflareURL, c.config.ZoneID, recordID)
-	req, _ := http.NewRequest("PUT", url, bytes.NewBuffer(payload))
-	req.Header.Set("Authorization", "Bearer "+c.config.Token)
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		c.logger.Error("Error updating DNS record", zap.Error(err))
-		return err
-	}
-	defer resp.Body.Close()
-
-	return nil
+	return c.sendRequest(url, payload, "PUT")
 }
 
 func (c *cloudflare) DeleteRecord(subdomain string) error {
@@ -160,16 +153,5 @@ func (c *cloudflare) DeleteRecord(subdomain string) error {
 	}
 
 	url := fmt.Sprintf("%s/zones/%s/dns_records/%s", c.config.CloudflareURL, c.config.ZoneID, recordID)
-	req, _ := http.NewRequest("DELETE", url, nil)
-	req.Header.Set("Authorization", "Bearer "+c.config.Token)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		c.logger.Error("Error deleting DNS record", zap.Error(err))
-		return err
-	}
-	defer resp.Body.Close()
-
-	return nil
+	return c.sendRequest(url, []byte{}, "DELETE")
 }
