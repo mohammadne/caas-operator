@@ -173,6 +173,12 @@ func (r *ExecuterReconciler) ReconcileDeployment(ctx context.Context, req ctrl.R
 
 		log.Info("Creating a new Deployment", "NamespacedName", req.NamespacedName.String())
 		if err = r.Create(ctx, desiredDeployment); err != nil {
+			executer.Status.DeploymentState = appsv1alpha1.ResourceStateFailed
+			if err := r.Status().Update(ctx, executer); err != nil {
+				log.Error(err, "Failed to update deployment state", "NamespacedName", req.NamespacedName.String())
+				return ctrl.Result{}, err
+			}
+
 			log.Error(err, "Failed to create new Deployment", "NamespacedName", req.NamespacedName.String())
 			return ctrl.Result{}, err
 		}
@@ -199,6 +205,12 @@ func (r *ExecuterReconciler) ReconcileDeployment(ctx context.Context, req ctrl.R
 				return reconcile.Result{RequeueAfter: time.Millisecond * 500}, nil
 			}
 
+			executer.Status.DeploymentState = appsv1alpha1.ResourceStateFailed
+			if err := r.Status().Update(ctx, executer); err != nil {
+				log.Error(err, "Failed to update deployment state", "NamespacedName", req.NamespacedName.String())
+				return ctrl.Result{}, err
+			}
+
 			log.Error(err, "Failed to update Deployment")
 			return ctrl.Result{}, err
 		}
@@ -216,10 +228,6 @@ func (r *ExecuterReconciler) ReconcileDeployment(ctx context.Context, req ctrl.R
 }
 
 func deploymentTemplate(executer *appsv1alpha1.Executer) *appsv1.Deployment {
-	if executer.Spec.Replication == 0 {
-		executer.Spec.Replication = 1
-	}
-
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      executer.Name,
@@ -281,6 +289,12 @@ func (r *ExecuterReconciler) ReconcileService(ctx context.Context, req ctrl.Requ
 
 		log.Info("Creating a new Service", "NamespacedName", req.NamespacedName.String())
 		if err = r.Create(ctx, desiredService); err != nil {
+			executer.Status.ServiceState = appsv1alpha1.ResourceStateFailed
+			if err := r.Status().Update(ctx, executer); err != nil {
+				log.Error(err, "Failed to update service state", "NamespacedName", req.NamespacedName.String())
+				return ctrl.Result{}, err
+			}
+
 			log.Error(err, "Failed to create new Service", "NamespacedName", req.NamespacedName.String())
 			return ctrl.Result{}, err
 		}
@@ -310,6 +324,12 @@ func (r *ExecuterReconciler) ReconcileService(ctx context.Context, req ctrl.Requ
 		if err := r.Update(ctx, foundService); err != nil {
 			if strings.Contains(err.Error(), genericregistry.OptimisticLockErrorMsg) {
 				return reconcile.Result{RequeueAfter: time.Millisecond * 500}, nil
+			}
+
+			executer.Status.ServiceState = appsv1alpha1.ResourceStateFailed
+			if err := r.Status().Update(ctx, executer); err != nil {
+				log.Error(err, "Failed to update service state", "NamespacedName", req.NamespacedName.String())
+				return ctrl.Result{}, err
 			}
 
 			log.Error(err, "Failed to update Service")
@@ -377,6 +397,12 @@ func (r *ExecuterReconciler) ReconcileIngress(ctx context.Context, req ctrl.Requ
 
 		log.Info("Creating a new Ingress", "NamespacedName", req.NamespacedName.String())
 		if err = r.Create(ctx, desiredIngress); err != nil {
+			executer.Status.IngressState = appsv1alpha1.ResourceStateFailed
+			if err := r.Status().Update(ctx, executer); err != nil {
+				log.Error(err, "Failed to update ingress state", "NamespacedName", req.NamespacedName.String())
+				return ctrl.Result{}, err
+			}
+
 			log.Error(err, "Failed to create new Ingress", "NamespacedName", req.NamespacedName.String())
 			return ctrl.Result{}, err
 		}
@@ -411,6 +437,12 @@ func (r *ExecuterReconciler) ReconcileIngress(ctx context.Context, req ctrl.Requ
 		if err := r.Update(ctx, foundIngress); err != nil {
 			if strings.Contains(err.Error(), genericregistry.OptimisticLockErrorMsg) {
 				return reconcile.Result{RequeueAfter: time.Millisecond * 500}, nil
+			}
+
+			executer.Status.IngressState = appsv1alpha1.ResourceStateFailed
+			if err := r.Status().Update(ctx, executer); err != nil {
+				log.Error(err, "Failed to update ingress state", "NamespacedName", req.NamespacedName.String())
+				return ctrl.Result{}, err
 			}
 
 			log.Error(err, "Failed to update Ingress")

@@ -60,6 +60,7 @@ const (
 	ResourceStateCreating ResourceState = "Creating"
 	ResourceStateCreated  ResourceState = "Created"
 	ResourceStateUpdating ResourceState = "Updating"
+	ResourceStateFailed   ResourceState = "Failed"
 )
 
 // ExecuterStatus defines the observed state of Executer
