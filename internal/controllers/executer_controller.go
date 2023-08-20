@@ -65,7 +65,7 @@ func (r *ExecuterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			return ctrl.Result{}, nil
 		}
 
-		host := r.getHost(executer, req.Namespace)
+		host := r.host(executer, req.Namespace)
 		if err := r.Cloudflare.DeleteRecord(host); err != nil {
 			log.Error("Failed to delete cloudflare record, Requeue the reconcile loop", zap.Error(err))
 			return ctrl.Result{Requeue: true}, err
@@ -115,7 +115,7 @@ func (r *ExecuterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			return ctrl.Result{Requeue: true}, nil
 		}
 
-		host := r.getHost(executer, req.Namespace)
+		host := r.host(executer, req.Namespace)
 		if err := r.Cloudflare.CreateRecord(host, r.Config.LoadbalancerIP); err != nil {
 			if err == cloudflare.RecordAlreadyExists {
 				if err := r.Cloudflare.UpdateRecord(host, r.Config.LoadbalancerIP); err != nil {
@@ -351,7 +351,7 @@ func serviceTemplate(executer *appsv1alpha1.Executer) *corev1.Service {
 	return service
 }
 
-func (r *ExecuterReconciler) getHost(executer *appsv1alpha1.Executer, namespace string) string {
+func (r *ExecuterReconciler) host(executer *appsv1alpha1.Executer, namespace string) string {
 	return fmt.Sprintf("%s.%s.caas.%s", executer.Spec.Ingress.Name, namespace, r.Config.Domain)
 }
 
@@ -359,7 +359,7 @@ func (r *ExecuterReconciler) ReconcileIngress(ctx context.Context, req ctrl.Requ
 	log := log.FromContext(ctx)
 
 	// create desired ingress and add the ownerReference for it
-	host := r.getHost(executer, req.Namespace)
+	host := r.host(executer, req.Namespace)
 	desiredIngress := ingressTemplate(executer, host)
 	if err := ctrl.SetControllerReference(executer, desiredIngress, r.Scheme); err != nil {
 		log.Error(err, "Failed to set reference", "NamespacedName", req.NamespacedName.String())
