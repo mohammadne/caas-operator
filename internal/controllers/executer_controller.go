@@ -429,6 +429,8 @@ func (r *ExecuterReconciler) ReconcileIngress(ctx context.Context, req ctrl.Requ
 	return ctrl.Result{}, nil
 }
 
+const clusterIssuer = "letsencrypt-production"
+
 func ingressTemplate(executer *appsv1alpha1.Executer, host string) *networkingv1.Ingress {
 	className := "nginx"
 	pathType := networkingv1.PathTypePrefix
@@ -439,7 +441,7 @@ func ingressTemplate(executer *appsv1alpha1.Executer, host string) *networkingv1
 			Namespace: executer.Namespace,
 			Labels:    labels(executer),
 			Annotations: map[string]string{
-				"cert-manager.io/cluster-issuer": "letsencrypt-production",
+				"cert-manager.io/cluster-issuer": clusterIssuer,
 			},
 		},
 		Spec: networkingv1.IngressSpec{
