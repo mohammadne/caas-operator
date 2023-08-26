@@ -91,7 +91,7 @@ var (
 )
 
 func (c *cloudflare) sendRequest(url string, payload []byte, method string) error {
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	req, _ := http.NewRequest(method, url, bytes.NewBuffer(payload))
 	req.Header.Set("Authorization", "Bearer "+c.config.Token)
 	req.Header.Set("Content-Type", "application/json")
 
