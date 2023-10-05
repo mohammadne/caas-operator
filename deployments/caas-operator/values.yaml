@@ -28,22 +28,28 @@ operator-helm:
       tag: "v0.1.2"
     args:
       - server
+    webhook:
+      mutating:
+        enabled: true
+        rules:
+          - operations: ["CREATE", "UPDATE"]
+            apiGroups: ["apps.ravh.ir"]
+            apiVersions: ["v1alpha1"]
+            resources: ["executers"]
+      validating:
+        enabled: true
+        rules:
+          - operations: ["CREATE", "UPDATE", "DELETE"]
+            apiGroups: ["apps.ravh.ir"]
+            apiVersions: ["v1alpha1"]
+            resources: ["executers"]
 
-  webhook:
-    mutating:
-      enabled: true
-      rules:
-        - operations: ["CREATE", "UPDATE"]
-          apiGroups: ["apps.ravh.ir"]
-          apiVersions: ["v1alpha1"]
-          resources: ["executers"]
-    validating:
-      enabled: true
-      rules:
-        - operations: ["CREATE", "UPDATE", "DELETE"]
-          apiGroups: ["apps.ravh.ir"]
-          apiVersions: ["v1alpha1"]
-          resources: ["executers"]
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  scrapeTimeout: 10s
+  selector:
+    release: kube-prometheus-stack
 
   config:
     enabled: true
